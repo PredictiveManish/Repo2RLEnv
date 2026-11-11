@@ -450,7 +450,7 @@ def walk_repo(
     for path in clone_dir.glob(file_glob):
         if not path.is_file():
             continue
-        rel = str(path.relative_to(clone_dir))
+        rel = path.relative_to(clone_dir).as_posix()
         if _is_excluded(rel, exclude_glob):
             continue
         try:

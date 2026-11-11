@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import tomllib
 from pathlib import Path
 
@@ -61,7 +62,8 @@ def test_solve_sh_emitted_and_executable(tmp_path: Path):
     out = write_harbor_task(task, tmp_path)
     solve = out / "solution" / "solve.sh"
     assert solve.is_file()
-    assert solve.stat().st_mode & 0o111  # executable
+    if os.name != "nt":
+        assert solve.stat().st_mode & 0o111  # executable
     content = solve.read_text()
     assert content.startswith("#!/bin/bash")
     # Must reference patch.diff (the canonical oracle artifact)
@@ -89,8 +91,9 @@ def test_writes_environment_and_test_script_when_provided(tmp_path: Path):
     assert (out / "tests" / "test.sh").is_file()
     assert (out / "environment" / "Dockerfile").read_text() == task.environment_dockerfile
     assert (out / "tests" / "test.sh").read_text() == task.test_script
-    # test.sh must be executable so Harbor can run it directly
-    assert (out / "tests" / "test.sh").stat().st_mode & 0o111
+    if os.name != "nt":
+        # test.sh must be executable so Harbor can run it directly
+        assert (out / "tests" / "test.sh").stat().st_mode & 0o111
 
     # reward_kinds upgrades to test_execution primary when test_script is present
     data = tomllib.loads((out / "task.toml").read_text())

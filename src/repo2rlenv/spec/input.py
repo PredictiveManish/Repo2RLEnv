@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal
@@ -36,6 +37,12 @@ class RepoSpec(BaseModel):
         if v.startswith("file://"):
             return "file://" + str(Path(v[len("file://") :]).expanduser().resolve())
         if v.startswith(("/", "~", "./", "../")):
+            return "file://" + str(Path(v).expanduser().resolve())
+        # Windows local paths: drive letter + colon (e.g. C:\ or C:/)
+        if re.match(r"^[a-zA-Z]:[/\\]", v):
+            return "file://" + str(Path(v).expanduser().resolve())
+        # Windows relative paths like .\ or ..\
+        if v.startswith(".\\") or v.startswith("..\\"):
             return "file://" + str(Path(v).expanduser().resolve())
         # Remote git host (github default for a bare owner/name; gitlab needs
         # a full URL since a bare owner/name is indistinguishable from github).

@@ -45,7 +45,7 @@ def test_list_source_files_glob_and_exclude(tmp_path: Path):
     (tmp_path / "README.md").write_text("docs\n")
 
     files = list_source_files(tmp_path, file_glob="**/*.py", exclude_glob=["tests/**"])
-    rels = sorted(str(p.relative_to(tmp_path)) for p in files)
+    rels = sorted(p.relative_to(tmp_path).as_posix() for p in files)
     assert rels == ["src/a.py", "src/b.py"]
 
 
